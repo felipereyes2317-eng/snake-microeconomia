@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Snake - Teoría de Juegos</title>
+<style>
+body{
+    text-align:center;
+    font-family:Arial;
+    background:#f0f0f0;
+}
+canvas{
+    background:black;
+}
+#pregunta{
+    display:none;
+    background:white;
+    padding:20px;
+    margin-top:20px;
+}
+button{
+    padding:10px;
+    margin:5px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🐍 Snake Económico</h1>
+<p>Si pierdes debes responder una pregunta de teoría de juegos</p>
+
+<canvas id="game" width="400" height="400"></canvas>
+
+<div id="pregunta">
+<h2 id="textoPregunta"></h2>
+<div id="opciones"></div>
+</div>
+
+<script>
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let snake = [{x:10,y:10}];
+let comida = {x:5,y:5};
+let dx = 1;
+let dy = 0;
+let tamaño = 20;
+
+const preguntas = [
+{
+p:"¿Qué estudia la teoría de juegos?",
+o:["Las decisiones estratégicas entre jugadores",
+   "Solo el comportamiento del consumidor",
+   "Solo el mercado laboral"],
+r:0
+},
+{
+p:"¿Qué es un equilibrio de Nash?",
+o:["Cuando un jugador gana siempre",
+   "Cuando ningún jugador puede mejorar su resultado cambiando su estrategia",
+   "Cuando todos pierden"],
+r:1
+},
+{
+p:"¿Qué es una estrategia dominante?",
+o:["La mejor estrategia sin importar lo que haga el rival",
+   "La más cara",
+   "La más arriesgada"],
+r:0
+}
+];
+
+document.addEventListener("keydown", cambiarDireccion);
+
+function cambiarDireccion(e){
+if(e.key==="ArrowUp"){dx=0;dy=-1;}
+if(e.key==="ArrowDown"){dx=0;dy=1;}
+if(e.key==="ArrowLeft"){dx=-1;dy=0;}
+if(e.key==="ArrowRight"){dx=1;dy=0;}
+}
+
+function gameLoop(){
+
+let cabeza = {x:snake[0].x+dx,y:snake[0].y+dy};
+
+if(cabeza.x<0 || cabeza.y<0 || cabeza.x>=20 || cabeza.y>=20){
+perder();
+return;
+}
+
+for(let s of snake){
+if(cabeza.x===s.x && cabeza.y===s.y){
+perder();
+return;
+}
+}
+
+snake.unshift(cabeza);
+
+if(cabeza.x===comida.x && cabeza.y===comida.y){
+comida={
+x:Math.floor(Math.random()*20),
+y:Math.floor(Math.random()*20)
+};
+}else{
+snake.pop();
+}
+
+ctx.clearRect(0,0,400,400);
+
+ctx.fillStyle="red";
+ctx.fillRect(comida.x*tamaño,comida.y*tamaño,tamaño,tamaño);
+
+ctx.fillStyle="lime";
+snake.forEach(s=>{
+ctx.fillRect(s.x*tamaño,s.y*tamaño,tamaño,tamaño);
+});
+
+}
+
+function perder(){
+
+clearInterval(loop);
+
+let q = preguntas[Math.floor(Math.random()*preguntas.length)];
+
+document.getElementById("pregunta").style.display="block";
+document.getElementById("textoPregunta").innerText=q.p;
+
+let opcionesHTML="";
+
+q.o.forEach((op,i)=>{
+opcionesHTML += `<button onclick="responder(${i},${q.r})">${op}</button>`;
+});
+
+document.getElementById("opciones").innerHTML=opcionesHTML;
+
+}
+
+function responder(op,correcta){
+
+if(op==correcta){
+alert("✅ Correcto! Puedes volver a jugar");
+location.reload();
+}else{
+alert("❌ Incorrecto. Intenta otra vez.");
+}
+
+}
+
+let loop = setInterval(gameLoop,120);
+
+</script>
+
+</body>
+</html>
